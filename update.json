@@ -1,6 +1,5 @@
 {
-  "versionCode": 7,
-  "versionName": "1.7",
+  "latest_version_code": 7,
   "apk_url": "https://github.com/ahmedaltmim/animehub-site/releases/download/v1.7/animehub.apk",
   "changelog": "• إصلاح نظام التحديثات بالكامل.\n• إضافة أزرار التنقل بين الحلقات.\n• تحسين الأداء والاستقرار."
 }
