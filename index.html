@@ -3,546 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeHub — تطبيق الأنمي العربي المتكامل</title>
-    <meta name="description" content="AnimeHub — تطبيق عربي أنيق لمتابعة الأنمي مع ترجمة، تعليقات، مفضلة، وقائمة مشاهدة.">
+    <title>AnimeHub | منصة الأنمي المتكاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #0a0a0f;
+            --card-bg: #141421;
+            --primary: #c44dff;
+            --gold: #ffd700;
+            --text-main: #ffffff;
+            --text-sub: #999999;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        :root {
-            --bg: #0a0a0f;
-            --bg-secondary: #12121a;
-            --card: #1a1a25;
-            --primary: #c44dff;
-            --primary-light: #ff6b9d;
-            --accent: #6b9dff;
-            --text: #e0e0e0;
-            --text-secondary: #999999;
-            --success: #2ecc71;
+            font-family: 'Cairo', sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
             overflow-x: hidden;
         }
 
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(10, 10, 15, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(196, 77, 255, 0.2);
-            padding: 15px 0;
-            z-index: 1000;
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-logo {
-            font-size: 24px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff6b9d, #c44dff, #6b9dff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            margin-right: 25px;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 100px 20px 60px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
+        /* توهج خلفي */
+        .glow {
             position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 40%, rgba(196, 77, 255, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 60%, rgba(107, 157, 255, 0.1) 0%, transparent 50%);
-            animation: float 20s ease-in-out infinite;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(196,77,255,0.2) 0%, rgba(10,10,15,0) 70%);
             z-index: -1;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(-20px, -20px) rotate(5deg); }
-        }
-
-        .hero-container {
-            max-width: 900px;
+        header {
             text-align: center;
-            z-index: 1;
+            padding: 40px 20px;
+            animation: fadeIn 1s ease-in-out;
         }
 
-        .hero-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, rgba(196, 77, 255, 0.2), rgba(107, 157, 255, 0.2));
-            border: 1px solid rgba(196, 77, 255, 0.4);
-            color: var(--primary);
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 25px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(196, 77, 255, 0.4); }
-            50% { box-shadow: 0 0 0 15px rgba(196, 77, 255, 0); }
-        }
-
-        .hero h1 {
-            font-size: clamp(36px, 7vw, 64px);
+        .logo {
+            font-size: 40px;
             font-weight: 900;
-            margin-bottom: 20px;
-            line-height: 1.2;
+            color: var(--primary);
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(196, 77, 255, 0.5);
         }
 
-        .hero h1 .gradient {
-            background: linear-gradient(135deg, #ff6b9d, #c44dff, #6b9dff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .subtitle {
+            color: var(--text-sub);
+            font-size: 16px;
         }
 
-        .hero p {
-            font-size: clamp(16px, 2vw, 20px);
-            color: var(--text-secondary);
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* كارت التحميل */
+        .download-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(196, 77, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             margin-bottom: 40px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+            animation: slideUp 0.8s ease-in-out;
         }
 
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(196, 77, 255, 0.3);
+            /* يمكنك تغيير الرابط إلى أيقونة تطبيقك إن وجدت */
+            background: linear-gradient(135deg, #c44dff, #6b1d99);
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 16px 32px;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #ff6b9d, #c44dff);
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(90deg, #c44dff, #8a2be2);
             color: white;
-            box-shadow: 0 8px 25px rgba(196, 77, 255, 0.4);
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 20px rgba(196, 77, 255, 0.4);
         }
 
-        .btn-primary:hover {
+        .download-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(196, 77, 255, 0.6);
+            box-shadow: 0 8px 25px rgba(196, 77, 255, 0.6);
         }
 
-        .btn-secondary {
-            background: rgba(196, 77, 255, 0.1);
-            color: var(--primary);
-            border: 1px solid rgba(196, 77, 255, 0.4);
+        .download-btn svg {
+            width: 24px;
+            height: 24px;
+            margin-left: 10px;
+            fill: currentColor;
         }
 
-        .btn-secondary:hover {
-            background: rgba(196, 77, 255, 0.2);
-            transform: translateY(-3px);
+        .version-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--text-sub);
         }
 
-        .section {
-            padding: 80px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+        .version-info span {
+            color: var(--gold);
+            font-weight: bold;
         }
 
-        .section-title {
-            text-align: center;
-            font-size: clamp(28px, 4vw, 42px);
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
-
-        .section-title .gradient {
-            background: linear-gradient(135deg, #ff6b9d, #c44dff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .section-subtitle {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 17px;
-            margin-bottom: 60px;
-        }
-
-        .features-grid {
+        /* المميزات */
+        .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
+            margin-bottom: 50px;
         }
 
-        .feature-card {
-            background: var(--card);
-            border: 1px solid rgba(196, 77, 255, 0.1);
-            border-radius: 20px;
-            padding: 30px 25px;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #ff6b9d, #c44dff, #6b9dff);
-            transform: scaleX(0);
-            transition: transform 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(196, 77, 255, 0.4);
-            box-shadow: 0 15px 40px rgba(196, 77, 255, 0.15);
-        }
-
-        .feature-card:hover::before {
-            transform: scaleX(1);
+        .feature-item {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .feature-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, rgba(255, 107, 157, 0.15), rgba(196, 77, 255, 0.15));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-
-        .feature-card h3 {
-            font-size: 18px;
+            font-size: 30px;
             margin-bottom: 10px;
-            color: var(--text);
         }
 
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .download-section {
-            padding: 80px 20px;
-            text-align: center;
-            background: linear-gradient(135deg, rgba(196, 77, 255, 0.05), rgba(107, 157, 255, 0.05));
-            border-top: 1px solid rgba(196, 77, 255, 0.1);
-            border-bottom: 1px solid rgba(196, 77, 255, 0.1);
-        }
-
-        .download-card {
-            max-width: 700px;
-            margin: 0 auto;
-            background: var(--card);
-            border-radius: 24px;
-            padding: 50px 30px;
-            border: 1px solid rgba(196, 77, 255, 0.2);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-        }
-
-        .download-card h2 {
-            font-size: 32px;
-            margin-bottom: 15px;
-        }
-
-        .download-card p {
-            color: var(--text-secondary);
-            margin-bottom: 30px;
+        .feature-title {
             font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        .download-info {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 25px;
-            flex-wrap: wrap;
-            color: var(--text-secondary);
+        .feature-desc {
             font-size: 13px;
-        }
-
-        .download-info span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: var(--text-sub);
         }
 
         footer {
-            padding: 40px 20px;
             text-align: center;
-            color: var(--text-secondary);
+            padding: 20px;
+            color: var(--text-sub);
             font-size: 14px;
-            border-top: 1px solid rgba(196, 77, 255, 0.1);
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
 
-        footer .gradient {
-            background: linear-gradient(135deg, #ff6b9d, #c44dff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        @media (max-width: 600px) {
-            .nav-links a {
-                margin-right: 12px;
-                font-size: 14px;
-            }
-            .btn {
-                padding: 14px 24px;
-                font-size: 15px;
-                width: 100%;
-                justify-content: center;
-            }
-            .hero-buttons {
-                flex-direction: column;
-            }
-        }
-
-        a[href*="netlify.com"],
-        div[class*="netlify"],
-        iframe[src*="netlify"],
-        [id*="netlify"],
-        [data-netlify],
-        [class*="Netlify"] {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            height: 0 !important;
-            width: 0 !important;
-            pointer-events: none !important;
-            position: absolute !important;
-            left: -9999px !important;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="nav-container">
-            <a href="#" class="nav-logo">AnimeHub</a>
-            <div class="nav-links">
-                <a href="#features">المميزات</a>
-            </div>
-        </div>
-    </nav>
+    <div class="glow"></div>
 
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-badge">🎬 منصة الأنمي العربي المتكاملة</div>
-            <h1>
-                شاهد الأنمي<br>
-                <span class="gradient">بأسلوب عصري</span>
-            </h1>
-            <p>
-                AnimeHub — تطبيق عربي أنيق لمتابعة الأنمي مع ترجمة فورية، تعليقات، مفضلة،
-                وقائمة مشاهدة. تجربة داكنة محفوظة، سرعة عالية، بدون إعلانات.
-            </p>
-            <div class="hero-buttons">
-                <a href="#download" class="btn btn-primary">
-                    <span>⬇</span> تحميل التطبيق
-                </a>
-                <a href="#features" class="btn btn-secondary">
-                    اكتشف المزيد
-                </a>
-            </div>
-        </div>
-    </section>
+    <header>
+        <div class="logo">AnimeHub</div>
+        <div class="subtitle">منصتك العربية المتكاملة للأنمي والمانجا</div>
+    </header>
 
-    <section class="section" id="features">
-        <h2 class="section-title">كل ما تحتاجه <span class="gradient">في تطبيق واحد</span></h2>
-        <p class="section-subtitle">مميزات احترافية صُممت خصيصاً لعشاق الأنمي</p>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">📺</div>
-                <h3>أحدث الأنميات</h3>
-                <p>تصفح آخر الأنميات الحالية والقادمة والرائجة بتحديثات يومية تلقائية.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🌐</div>
-                <h3>ترجمة فورية</h3>
-                <p>ترجمة تلقائية للقصة والمعلومات بتقنية Google Translate.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">💬</div>
-                <h3>تعليقات ومجتمع</h3>
-                <p>شارك آراءك، أعجب، وأبلغ. مع ميزة "الحرق" للتعليقات الحساسة.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">❤️</div>
-                <h3>المفضلة والمشاهدة</h3>
-                <p>احفظ الأنميات في المفضلة، وأنشئ قائمة مشاهدة خاصة بك.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">⭐</div>
-                <h3>تقييمات مفصلة</h3>
-                <p>قيّم الأنمي حسب القصة، الشخصيات، الرسم، والموسيقى.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🌙</div>
-                <h3>وضع داكن</h3>
-                <p>تصميم داكن مريح للعين، مثالي للمشاهدة ليلاً.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🔔</div>
-                <h3>إشعارات ذكية</h3>
-                <p>ابق على اطلاع عند الإعجاب بتعليقاتك أو الردود عليها.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>سرعة فائقة</h3>
-                <p>تحميل سريع، تصميم انسيابي، وتخزين مؤقت ذكي للبيانات.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="download-section" id="download">
+    <div class="container">
         <div class="download-card">
-            <h2>حمّل <span class="gradient">AnimeHub</span> الآن</h2>
-            <p>ابدأ رحلتك في عالم الأنمي بتجربة عربية احترافية</p>
-
-            <a href="animehub.apk" class="btn btn-primary" download>
-                <span>⬇</span> تحميل APK
+            <!-- أيقونة التطبيق -->
+            <div class="app-icon">A</div>
+            
+            <h2>تحميل التطبيق</h2>
+            <p style="color: var(--text-sub); margin-top: 10px;">أحدث إصدار متاح الآن للتحميل المباشر</p>
+            
+            <!-- 🆕 تم تصحيح رابط التحميل ليشير إلى GitHub Releases -->
+            <a href="https://github.com/ahmedaltmim/animehub-site/releases/download/v1.7/animehub.apk" class="download-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 2v13.5l4.5-4.5L18 12l-6 6-6-6 1.5-1.5L12 15.5V2h0zM4 20h16v2H4z"/></svg>
+                تحميل APK
             </a>
-
-            <div class="download-info">
-                <span>📱 Android 7.0+</span>
-                <span>💾 حجم صغير</span>
-                <span>🆓 مجاني تماماً</span>
+            
+            <div class="version-info">
+                الإصدار الحالي: <span>v1.7</span>
             </div>
         </div>
-    </section>
+
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon">🎬</div>
+                <div class="feature-title">مشاهدة الأنمي</div>
+                <div class="feature-desc">أحدث الحلقات مع الترجمة والدبلجة</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📚</div>
+                <div class="feature-title">قراءة المانجا</div>
+                <div class="feature-desc">مكتبة ضخمة من المانجا العربية</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">سريع وخفيف</div>
+                <div class="feature-desc">واجهة سلسة وتنقل بدون تهنيج</div>
+            </div>
+        </div>
+    </div>
 
     <footer>
-        <p>صُنع بـ ❤️ لتطبيق <span class="gradient">AnimeHub</span></p>
-        <p style="margin-top: 10px; font-size: 12px;">© 2026 AnimeHub — جميع الحقوق محفوظة</p>
+        جميع الحقوق محفوظة &copy; 2026 AnimeHub
     </footer>
-
-    <script>
-        (function() {
-            function removeNetlifyBadge() {
-                document.querySelectorAll('a[href*="netlify.com"]').forEach(function(el) {
-                    el.remove();
-                });
-                document.querySelectorAll('iframe[src*="netlify"]').forEach(function(el) {
-                    el.remove();
-                });
-                document.querySelectorAll('[id*="netlify"], [class*="netlify"], [id*="Netlify"], [class*="Netlify"]').forEach(function(el) {
-                    el.remove();
-                });
-                document.querySelectorAll('body > div').forEach(function(el) {
-                    var style = window.getComputedStyle(el);
-                    if (style.position === 'fixed' && (style.bottom === '0px' || style.bottom === '0')) {
-                        var text = el.textContent.toLowerCase();
-                        if (text.includes('netlify') || text.includes('powered')) {
-                            el.remove();
-                        }
-                    }
-                });
-            }
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', removeNetlifyBadge);
-            } else {
-                removeNetlifyBadge();
-            }
-
-            setTimeout(removeNetlifyBadge, 500);
-            setTimeout(removeNetlifyBadge, 1500);
-            setTimeout(removeNetlifyBadge, 3000);
-            setTimeout(removeNetlifyBadge, 5000);
-
-            var observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1) {
-                            if (node.tagName === 'A' && node.href && node.href.includes('netlify')) {
-                                node.remove();
-                            }
-                            if (node.tagName === 'IFRAME' && node.src && node.src.includes('netlify')) {
-                                node.remove();
-                            }
-                        }
-                    });
-                });
-            });
-
-            document.addEventListener('DOMContentLoaded', function() {
-                observer.observe(document.body, { childList: true, subtree: true });
-            });
-            if (document.body) {
-                observer.observe(document.body, { childList: true, subtree: true });
-            }
-        })();
-    </script>
 
 </body>
 </html>
