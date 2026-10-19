@@ -1,534 +1,526 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeHub | عالم الأنمي بين يديك</title>
-    <meta name="description" content="حمل تطبيق AnimeHub لمشاهدة أحدث حلقات الأنمي بترجمة عربية.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #07070a;
-            --bg-card: rgba(22, 22, 33, 0.7);
-            --primary: #a855f7;
-            --primary-glow: rgba(168, 85, 247, 0.5);
-            --secondary: #ec4899;
-            --accent: #3b82f6;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --glass-border: rgba(255, 255, 255, 0.08);
+package com.example.animehub;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.signature.ObjectKey;
+import com.example.animehub.adapters.AnimeAdapter;
+import com.example.animehub.api.AnimeRepository;
+import com.example.animehub.models.Anime;
+import com.example.animehub.utils.AuthHelper;
+import com.example.animehub.utils.PrefsHelper;
+// import com.example.animehub.utils.UpdateChecker; // تم تعطيل الاستيراد
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String TAG = "MainActivity";
+    private static final String TOPIC_ALL_USERS = "all_users";
+
+    private RecyclerView recyclerView;
+    private AnimeAdapter animeAdapter;
+    private ProgressBar progress;
+    private SwipeRefreshLayout swipeRefresh;
+    private LinearLayout emptyView;
+    private TextView emptyText;
+    private TextView sectionTitle;
+    private ImageView btnViewToggle;
+
+    private View noInternetView;
+    private TextView btnRetry;
+
+    private DrawerLayout drawerLayout;
+    private NavigationView navView;
+    private View navHeaderView;
+
+    private AnimeRepository repository;
+    private PrefsHelper prefs;
+
+    private String currentSection = "trending";
+    private boolean isGridMode = true;
+
+    private static final int REQ_LOGIN = 500;
+    private static final int REQ_NOTIF_PERM = 700;
+
+    private final Map<String, List<Anime>> sectionCache = new HashMap<>();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        applyStatusBarColor();
+
+        prefs = new PrefsHelper(this);
+        isGridMode = "grid".equals(prefs.getViewMode());
+
+        recyclerView = findViewById(R.id.recyclerView);
+        progress = findViewById(R.id.progress);
+        swipeRefresh = findViewById(R.id.swipeRefresh);
+        emptyView = findViewById(R.id.emptyView);
+        emptyText = findViewById(R.id.emptyText);
+        sectionTitle = findViewById(R.id.sectionTitle);
+        btnViewToggle = findViewById(R.id.btnViewToggle);
+
+        noInternetView = findViewById(R.id.noInternetView);
+        btnRetry = findViewById(R.id.btnRetry);
+
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navView = findViewById(R.id.navView);
+
+        repository = new AnimeRepository();
+        animeAdapter = new AnimeAdapter(this, new ArrayList<>());
+
+        setupRecycler();
+
+        ImageView btnSearch = findViewById(R.id.btnSearch);
+        btnSearch.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, SearchActivity.class)));
+
+        btnViewToggle.setOnClickListener(v -> toggleViewMode());
+
+        ImageView btnMenu = findViewById(R.id.btnMenu);
+        btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+
+        navView.setNavigationItemSelectedListener(this);
+        navView.setCheckedItem(R.id.nav_trending);
+
+        navHeaderView = navView.getHeaderView(0);
+        setupNavHeader();
+
+        swipeRefresh.setOnRefreshListener(this::loadCurrentSection);
+
+        if (btnRetry != null) {
+            btnRetry.setOnClickListener(v -> {
+                if (isNetworkAvailable()) {
+                    hideNoInternet();
+                    loadCurrentSection();
+                } else {
+                    Toast.makeText(this, "لا يزال الاتصال غير متوفر", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
-            scroll-behavior: smooth;
+        updateViewToggleIcon();
+        applyLogoGradient();
+
+        requestNotificationPermissionIfNeeded();
+
+        subscribeToAllUsersTopic();
+
+        // 🆕 تم إزالة استدعاء فحص التحديثات لإخفاء النافذة
+        // UpdateChecker.check(this);
+
+        if (isNetworkAvailable()) {
+            hideNoInternet();
+            loadTrending();
+        } else {
+            showNoInternet();
         }
+    }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
+    private void subscribeToAllUsersTopic() {
+        FirebaseMessaging.getInstance()
+                .subscribeToTopic(TOPIC_ALL_USERS)
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.e(TAG, "❌ فشل الاشتراك في " + TOPIC_ALL_USERS, task.getException());
+                    } else {
+                        Log.d(TAG, "✅ تم الاشتراك في " + TOPIC_ALL_USERS);
+                    }
+                });
+    }
 
-        /* تأثيرات الإضاءة الخلفية */
-        .glow-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .glow-circle {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.4;
-            animation: float 12s infinite alternate ease-in-out;
-        }
-
-        .circle-1 { top: -10%; right: -10%; width: 600px; height: 600px; background: var(--primary); }
-        .circle-2 { bottom: -10%; left: -10%; width: 500px; height: 500px; background: var(--accent); animation-delay: -5s; }
-        .circle-3 { top: 40%; left: 30%; width: 400px; height: 400px; background: var(--secondary); animation-delay: -10s; opacity: 0.2; }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(-50px, 50px) scale(1.1); }
-        }
-
-        /* شريط التنقل */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(7, 7, 10, 0.8);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--glass-border);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .nav-logo {
-            font-size: 28px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        /* القسم الرئيسي (Hero) */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 120px 8% 60px;
-            gap: 50px;
-        }
-
-        .hero-text {
-            flex: 1;
-            max-width: 600px;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            background: rgba(168, 85, 247, 0.1);
-            color: var(--primary);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-
-        .hero-title {
-            font-size: 56px;
-            font-weight: 900;
-            line-height: 1.2;
-            margin-bottom: 20px;
-        }
-
-        .hero-title span {
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-desc {
-            font-size: 18px;
-            color: var(--text-muted);
-            margin-bottom: 40px;
-            max-width: 500px;
-        }
-
-        .cta-group {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            padding: 18px 40px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            text-decoration: none;
-            border-radius: 16px;
-            font-size: 20px;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 10px 30px var(--primary-glow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px var(--primary-glow);
-        }
-
-        .btn-primary svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 18px 30px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
-            text-decoration: none;
-            border-radius: 16px;
-            font-size: 18px;
-            font-weight: 700;
-            border: 1px solid var(--glass-border);
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* هاتف ثلاثي الأبعاد وهمي */
-        .hero-visual {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            position: relative;
-        }
-
-        .phone-mockup {
-            width: 300px;
-            height: 600px;
-            background: #111;
-            border-radius: 40px;
-            border: 8px solid #222;
-            position: relative;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(168, 85, 247, 0.2);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            animation: float-phone 6s ease-in-out infinite;
-        }
-
-        @keyframes float-phone {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .phone-screen {
-            flex: 1;
-            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .app-logo-small {
-            font-size: 20px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .app-search {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-        }
-
-        .app-banner {
-            width: 100%;
-            height: 150px;
-            border-radius: 16px;
-            background: linear-gradient(45deg, #6d28d9, #be185d);
-            display: flex;
-            align-items: flex-end;
-            padding: 15px;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .app-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .app-item {
-            height: 120px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* قسم المميزات */
-        .section-title {
-            text-align: center;
-            font-size: 42px;
-            font-weight: 900;
-            margin-bottom: 60px;
-        }
-
-        .section-title span {
-            color: var(--primary);
-        }
-
-        .features {
-            padding: 100px 8%;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px 30px;
-            backdrop-filter: blur(10px);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            background: rgba(30, 30, 45, 0.9);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            border-color: rgba(168, 85, 247, 0.3);
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
-        .icon-box {
-            width: 70px;
-            height: 70px;
-            border-radius: 20px;
-            background: rgba(168, 85, 247, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            margin-bottom: 25px;
-            color: var(--primary);
-        }
-
-        .feature-card h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .feature-card p {
-            color: var(--text-muted);
-            font-size: 16px;
-        }
-
-        /* التذييل */
-        footer {
-            border-top: 1px solid var(--glass-border);
-            padding: 40px 8%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            background: rgba(7, 7, 10, 0.9);
-        }
-
-        .footer-text {
-            color: var(--text-muted);
-        }
-
-        /* تجاوب الشاشات */
-        @media (max-width: 968px) {
-            .hero {
-                flex-direction: column;
-                text-align: center;
-                padding-top: 120px;
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQ_NOTIF_PERM);
             }
-            .hero-text { max-width: 100%; }
-            .hero-desc { margin: 0 auto 40px; }
-            .cta-group { justify-content: center; }
-            .nav-links { display: none; }
-            .hero-title { font-size: 40px; }
         }
+    }
 
-        /* حركات الظهور */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQ_NOTIF_PERM) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "تم تفعيل الإشعارات ✅", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "الإشعارات معطلة — يمكنك تفعيلها من الإعدادات", Toast.LENGTH_LONG).show();
+            }
         }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        applyStatusBarColor();
+        updateNavHeader();
+
+        if (isNetworkAvailable() && noInternetView != null
+                && noInternetView.getVisibility() == View.VISIBLE) {
+            hideNoInternet();
+            loadCurrentSection();
         }
-    </style>
-</head>
-<body>
+    }
 
-    <!-- خلفية متوهجة -->
-    <div class="glow-bg">
-        <div class="glow-circle circle-1"></div>
-        <div class="glow-circle circle-2"></div>
-        <div class="glow-circle circle-3"></div>
-    </div>
+    private boolean isNetworkAvailable() {
+        try {
+            ConnectivityManager cm = (ConnectivityManager)
+                    getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return false;
 
-    <!-- شريط التنقل -->
-    <nav>
-        <div class="nav-logo">AnimeHub</div>
-        <div class="nav-links">
-            <a href="#home">الرئيسية</a>
-            <a href="#features">المميزات</a>
-            <a href="#download">تحميل</a>
-        </div>
-    </nav>
+            Network network = cm.getActiveNetwork();
+            if (network == null) return false;
 
-    <!-- القسم الرئيسي -->
-    <section class="hero" id="home">
-        <div class="hero-text reveal">
-            <!-- 🆕 تم تحديث رقم الإصدار إلى 1.8 -->
-            <div class="hero-badge">🚀 الإصدار v1.8 متوفر الآن</div>
-            <h1 class="hero-title">اكتشف عالم <span>الأنمي</span> بلا حدود</h1>
-            <p class="hero-desc">تطبيق AnimeHub يقدم لك تجربة مشاهدة متكاملة، سريعة، وخالية من الإعلانات المزعجة. انضم لآلاف المستخدمين الآن.</p>
-            
-            <div class="cta-group" id="download">
-                <!-- 🆕 تم تحديث رابط التحميل إلى v1.8 -->
-                <a href="https://github.com/ahmedaltmim/animehub-site/releases/download/v1.8/animehub.apk" class="btn-primary">
-                    <svg viewBox="0 0 24 24"><path d="M12 2v13.5l4.5-4.5L18 12l-6 6-6-6 1.5-1.5L12 15.5V2h0zM4 20h16v2H4z"/></svg>
-                    تحميل التطبيق APK
-                </a>
-                <a href="#features" class="btn-secondary">
-                    استكشف المميزات ↓
-                </a>
-            </div>
-        </div>
+            NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+            if (capabilities == null) return false;
 
-        <!-- الهاتف الوهمي -->
-        <div class="hero-visual reveal">
-            <div class="phone-mockup">
-                <div class="phone-screen">
-                    <div class="app-header">
-                        <div class="app-logo-small">AnimeHub</div>
-                        <div class="app-search"></div>
-                    </div>
-                    <div class="app-banner">أحدث الحلقات</div>
-                    <div class="app-grid">
-                        <div class="app-item"></div>
-                        <div class="app-item"></div>
-                        <div class="app-item"></div>
-                        <div class="app-item"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                    || capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                    || capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-    <!-- قسم المميزات -->
-    <section class="features" id="features">
-        <h2 class="section-title reveal">لماذا <span>AnimeHub</span>؟</h2>
-        
-        <div class="grid-container">
-            <div class="feature-card reveal">
-                <div class="icon-box">🎬</div>
-                <h3>مشاهدة بجودة عالية</h3>
-                <p>استمتع بمشاهدة أحدث حلقات الأنمي مع ترجمة دقيقة وسيرفرات سريعة تدعم المشاهدة بدون تقطيع.</p>
-            </div>
+    private void showNoInternet() {
+        if (noInternetView == null) return;
+        noInternetView.setVisibility(View.VISIBLE);
+        if (recyclerView != null) recyclerView.setVisibility(View.GONE);
+        if (progress != null) progress.setVisibility(View.GONE);
+        if (emptyView != null) emptyView.setVisibility(View.GONE);
+        if (swipeRefresh != null) swipeRefresh.setRefreshing(false);
+    }
 
-            <div class="feature-card reveal" style="transition-delay: 0.2s;">
-                <div class="icon-box">⚡</div>
-                <h3>أداء استثنائي</h3>
-                <p>التطبيق مبني ليكون خفيفاً جداً على الجهاز، مع تنقل سلس بين الصفحات وبدون أي تهنيج.</p>
-            </div>
+    private void hideNoInternet() {
+        if (noInternetView == null) return;
+        noInternetView.setVisibility(View.GONE);
+        if (recyclerView != null) recyclerView.setVisibility(View.VISIBLE);
+    }
 
-            <div class="feature-card reveal">
-                <div class="icon-box">☁️</div>
-                <h3>مزامنة سحابية</h3>
-                <p>قائمتك المفضلة، إحصائياتك، وسجل مشاهدتك محفوظة في السحابة، متاحة لك على جميع أجهزتك.</p>
-            </div>
+    private void setupRecycler() {
+        recyclerView.setLayoutManager(isGridMode
+                ? new GridLayoutManager(this, 3)
+                : new LinearLayoutManager(this));
+        animeAdapter.setViewMode(isGridMode ? "grid" : "list");
+        recyclerView.setAdapter(animeAdapter);
+    }
 
-            <div class="feature-card reveal" style="transition-delay: 0.1s;">
-                <div class="icon-box">🔔</div>
-                <h3>إشعارات ذكية</h3>
-                <p>كن أول من يعرف عند نزول حلقة جديدة لأنمياتك المفضلة.</p>
-            </div>
+    private void setupNavHeader() {
+        if (navHeaderView == null) return;
+        updateNavHeader();
 
-            <div class="feature-card reveal" style="transition-delay: 0.2s;">
-                <div class="icon-box">📥</div>
-                <h3>تحميل للمشاهدة لاحقاً</h3>
-                <p>قم بتحميل حلقاتك المفضلة بجودة عالية لمشاهدتها في أي وقت بدون الحاجة للإنترنت.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- التذييل -->
-    <footer>
-        <div class="nav-logo">AnimeHub</div>
-        <div class="footer-text">صُنع بكل حب &copy; 2026 AnimeHub. جميع الحقوق محفوظة.</div>
-    </footer>
-
-    <script>
-        function reveal() {
-            var reveals = document.querySelectorAll(".reveal");
-            for (var i = 0; i < reveals.length; i++) {
-                var windowHeight = window.innerHeight;
-                var elementTop = reveals[i].getBoundingClientRect().top;
-                var elementVisible = 100;
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add("active");
+        navHeaderView.setOnClickListener(v -> {
+            if (!AuthHelper.isSignedIn()) {
+                try {
+                    startActivityForResult(new Intent(MainActivity.this, LoginActivity.class), REQ_LOGIN);
+                } catch (Exception e) {
+                    Toast.makeText(this, "شاشة تسجيل الدخول غير متوفرة", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                try {
+                    startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+                } catch (Exception e) {
+                    Toast.makeText(this, "شاشة الملف الشخصي غير متوفرة", Toast.LENGTH_SHORT).show();
                 }
             }
+        });
+    }
+
+    private void updateNavHeader() {
+        if (navHeaderView == null) return;
+        TextView navUserName = navHeaderView.findViewById(R.id.navUserName);
+        TextView navUserSub = navHeaderView.findViewById(R.id.navUserSub);
+        ImageView navAvatar = navHeaderView.findViewById(R.id.navAvatar);
+
+        if (AuthHelper.isSignedIn()) {
+            String name = prefs.getProfileName(this);
+            if (name == null || name.trim().isEmpty()) name = AuthHelper.getCurrentName(this);
+            navUserName.setText(name);
+            navUserSub.setText(AuthHelper.getCurrentEmail());
+
+            String customAvatar = prefs.getProfileAvatar();
+            if (customAvatar != null && !customAvatar.trim().isEmpty()) {
+                loadAvatar(navAvatar, customAvatar);
+            } else {
+                String photo = AuthHelper.getCurrentPhoto(this);
+                if (photo != null && !photo.trim().isEmpty()) loadAvatar(navAvatar, photo);
+                else navAvatar.setImageDrawable(null);
+            }
+        } else {
+            navUserName.setText("انقر هنا لتسجيل الدخول");
+            navUserSub.setText("اضغط للدخول بحساب Google");
+            navAvatar.setImageDrawable(null);
         }
-        window.addEventListener("scroll", reveal);
-        reveal();
-    </script>
-</body>
-</html>
+    }
+
+    private void loadAvatar(ImageView target, String source) {
+        long sig = getFileTime(source);
+        Glide.with(this).load(source)
+                .signature(new ObjectKey(source + "_" + sig))
+                .circleCrop().into(target);
+    }
+
+    private long getFileTime(String path) {
+        if (path == null || path.startsWith("http") || path.startsWith("content")) return 0;
+        File f = new File(path);
+        return f.exists() ? f.lastModified() : 0;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_LOGIN && resultCode == RESULT_OK) updateNavHeader();
+    }
+
+    private void applyStatusBarColor() {
+        getWindow().setStatusBarColor(Color.parseColor("#141421"));
+        getWindow().setNavigationBarColor(Color.parseColor("#141421"));
+    }
+
+    private void applyLogoGradient() {
+        TextView logo = findViewById(R.id.toolbarLogo);
+        if (logo == null) return;
+        logo.post(() -> {
+            float w = logo.getPaint().measureText(logo.getText().toString());
+            if (w <= 0) w = logo.getWidth();
+            if (w <= 0) return;
+            android.graphics.Shader shader = new android.graphics.LinearGradient(
+                    0, 0, w, 0,
+                    new int[]{
+                            Color.parseColor("#ff6b9d"),
+                            Color.parseColor("#c44dff"),
+                            Color.parseColor("#6b9dff")
+                    },
+                    null,
+                    android.graphics.Shader.TileMode.CLAMP);
+            logo.getPaint().setShader(shader);
+            logo.invalidate();
+        });
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_trending) loadTrending();
+        else if (id == R.id.nav_top_rated) loadTopRated();
+        else if (id == R.id.nav_season) loadThisSeason();
+        else if (id == R.id.nav_upcoming) loadUpcoming();
+        
+        else if (id == R.id.nav_my_list) {
+            try { startActivity(new Intent(this, MyListActivity.class)); }
+            catch (Exception e) { Toast.makeText(this, "شاشة قائمتي غير متوفرة", Toast.LENGTH_SHORT).show(); }
+        }
+        
+        else if (id == R.id.nav_favorites) openListActivity("favorites", "قائمتي المفضلة");
+        else if (id == R.id.nav_watchlist) openListActivity("watchlist", "قائمة المشاهدة");
+        else if (id == R.id.nav_history) openListActivity("history", "سجل المشاهدة");
+        else if (id == R.id.nav_notifications) {
+            try { startActivity(new Intent(this, NotificationsActivity.class)); }
+            catch (Exception e) { Toast.makeText(this, "شاشة الإشعارات غير متوفرة", Toast.LENGTH_SHORT).show(); }
+        }
+        else if (id == R.id.nav_report) {
+            try { startActivity(new Intent(this, ReportProblemActivity.class)); }
+            catch (Exception e) { Toast.makeText(this, "شاشة الإبلاغ غير متوفرة", Toast.LENGTH_SHORT).show(); }
+        }
+        else if (id == R.id.nav_downloads) {
+            try { startActivity(new Intent(this, DownloadsActivity.class)); }
+            catch (Exception e) { Toast.makeText(this, "شاشة التنزيلات غير متوفرة", Toast.LENGTH_SHORT).show(); }
+        }
+        else if (id == R.id.nav_settings) {
+            try { startActivity(new Intent(this, SettingsActivity.class)); }
+            catch (Exception e) { Toast.makeText(this, "شاشة الإعدادات غير متوفرة", Toast.LENGTH_SHORT).show(); }
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    private void openListActivity(String type, String title) {
+        Intent i = new Intent(this, AnimeListActivity.class);
+        i.putExtra(AnimeListActivity.EXTRA_TYPE, type);
+        i.putExtra(AnimeListActivity.EXTRA_TITLE, title);
+        startActivity(i);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.closeDrawer(GravityCompat.START);
+        else super.onBackPressed();
+    }
+
+    private void toggleViewMode() {
+        isGridMode = !isGridMode;
+        prefs.setViewMode(isGridMode ? "grid" : "list");
+        updateViewToggleIcon();
+
+        recyclerView.setAdapter(null);
+        recyclerView.setLayoutManager(isGridMode
+                ? new GridLayoutManager(this, 3)
+                : new LinearLayoutManager(this));
+        animeAdapter.setViewMode(isGridMode ? "grid" : "list");
+        recyclerView.setAdapter(animeAdapter);
+
+        List<Anime> cached = sectionCache.get(currentSection);
+        if (cached != null && !cached.isEmpty()) animeAdapter.setAnimeList(cached);
+        else loadCurrentSection();
+    }
+
+    private void updateViewToggleIcon() {
+        btnViewToggle.setImageResource(isGridMode ? R.drawable.ic_grid : R.drawable.ic_list);
+    }
+
+    private void loadTrending() {
+        currentSection = "trending";
+        sectionTitle.setText("الرئيسية والرائجة");
+        loadSectionWithCache("trending", () -> repository.getTrending(1, callback));
+    }
+
+    private void loadTopRated() {
+        currentSection = "top";
+        sectionTitle.setText("الأعلى تقييماً");
+        loadSectionWithCache("top", () -> repository.getTopRated(1, callback));
+    }
+
+    private void loadThisSeason() {
+        currentSection = "season";
+        sectionTitle.setText("أنميات الموسم الحالي");
+        loadSectionWithCache("season", () -> repository.getThisSeason(1, callback));
+    }
+
+    private void loadUpcoming() {
+        currentSection = "upcoming";
+        sectionTitle.setText("قادمة قريباً");
+        loadSectionWithCache("upcoming", () -> repository.getUpcoming(1, callback));
+    }
+
+    private void loadSectionWithCache(String key, Runnable fetch) {
+        if (!isNetworkAvailable()) {
+            showNoInternet();
+            return;
+        }
+        hideNoInternet();
+
+        recyclerView.setAdapter(null);
+        recyclerView.setLayoutManager(isGridMode
+                ? new GridLayoutManager(this, 3)
+                : new LinearLayoutManager(this));
+        animeAdapter.setViewMode(isGridMode ? "grid" : "list");
+        animeAdapter.setAnimeList(new ArrayList<>());
+        recyclerView.setAdapter(animeAdapter);
+
+        List<Anime> cached = sectionCache.get(key);
+        if (cached != null && !cached.isEmpty()) {
+            emptyView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+            animeAdapter.setAnimeList(cached);
+            swipeRefresh.setRefreshing(false);
+            showLoading(false);
+            new Handler(Looper.getMainLooper()).postDelayed(fetch, 5000);
+            return;
+        }
+        showLoading(true);
+        fetch.run();
+    }
+
+    private void loadCurrentSection() {
+        switch (currentSection) {
+            case "top": loadTopRated(); break;
+            case "season": loadThisSeason(); break;
+            case "upcoming": loadUpcoming(); break;
+            default: loadTrending(); break;
+        }
+    }
+
+    private final AnimeRepository.AnimeCallback callback = new AnimeRepository.AnimeCallback() {
+        @Override
+        public void onSuccess(List<Anime> animeList) {
+            showLoading(false);
+            swipeRefresh.setRefreshing(false);
+            if (animeList == null || animeList.isEmpty()) {
+                emptyView.setVisibility(View.VISIBLE);
+                emptyText.setText("لا توجد نتائج");
+                recyclerView.setVisibility(View.GONE);
+            } else {
+                sectionCache.put(currentSection, new ArrayList<>(animeList));
+                emptyView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
+                animeAdapter.setAnimeList(animeList);
+            }
+        }
+
+        @Override
+        public void onError(String errorMessage) {
+            showLoading(false);
+            swipeRefresh.setRefreshing(false);
+
+            if (!isNetworkAvailable()) {
+                showNoInternet();
+                return;
+            }
+
+            List<Anime> cached = sectionCache.get(currentSection);
+            if (cached != null && !cached.isEmpty()) {
+                animeAdapter.setAnimeList(cached);
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.GONE);
+                return;
+            }
+            Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+            emptyView.setVisibility(View.VISIBLE);
+            emptyText.setText(errorMessage);
+        }
+    };
+
+    private void showLoading(boolean show) {
+        if (progress != null) {
+            progress.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+}
