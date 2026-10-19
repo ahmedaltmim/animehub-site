@@ -397,7 +397,7 @@
             .hero-text { max-width: 100%; }
             .hero-desc { margin: 0 auto 40px; }
             .cta-group { justify-content: center; }
-            .nav-links { display: none; } /* إخفاء الروابط في الجوال */
+            .nav-links { display: none; }
             .hero-title { font-size: 40px; }
         }
 
@@ -435,13 +435,14 @@
     <!-- القسم الرئيسي -->
     <section class="hero" id="home">
         <div class="hero-text reveal">
-            <div class="hero-badge">🚀 الإصدار v1.7 متوفر الآن</div>
+            <!-- 🆕 تم تحديث رقم الإصدار إلى 1.8 -->
+            <div class="hero-badge">🚀 الإصدار v1.8 متوفر الآن</div>
             <h1 class="hero-title">اكتشف عالم <span>الأنمي</span> بلا حدود</h1>
             <p class="hero-desc">تطبيق AnimeHub يقدم لك تجربة مشاهدة متكاملة، سريعة، وخالية من الإعلانات المزعجة. انضم لآلاف المستخدمين الآن.</p>
             
             <div class="cta-group" id="download">
-                <!-- رابط التحميل المباشر -->
-                <a href="https://github.com/ahmedaltmim/animehub-site/releases/download/v1.7/animehub.apk" class="btn-primary">
+                <!-- 🆕 تم تحديث رابط التحميل إلى v1.8 -->
+                <a href="https://github.com/ahmedaltmim/animehub-site/releases/download/v1.8/animehub.apk" class="btn-primary">
                     <svg viewBox="0 0 24 24"><path d="M12 2v13.5l4.5-4.5L18 12l-6 6-6-6 1.5-1.5L12 15.5V2h0zM4 20h16v2H4z"/></svg>
                     تحميل التطبيق APK
                 </a>
@@ -515,7 +516,6 @@
     </footer>
 
     <script>
-        // سكريبت لتفعيل حركات الظهور عند التمرير
         function reveal() {
             var reveals = document.querySelectorAll(".reveal");
             for (var i = 0; i < reveals.length; i++) {
@@ -528,7 +528,7 @@
             }
         }
         window.addEventListener("scroll", reveal);
-        reveal(); // تشغيلها مرة واحدة عند تحميل الصفحة
+        reveal();
     </script>
 </body>
 </html>
