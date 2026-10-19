@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeHub | منصة الأنمي المتكاملة</title>
-    <meta name="description" content="تحميل تطبيق AnimeHub لمشاهدة وتحميل الأنمي والمانجا بجودة عالية وترجمة عربية.">
+    <title>AnimeHub | استكشف عالم الأنمي</title>
+    <meta name="description" content="حمل تطبيق AnimeHub الآن واستمتع بمشاهدة أحدث الحلقات والمانجا بجودة عالية وترجمة عربية.">
+    
+    <!-- خط Tajawal الاحترافي من جوجل -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- أيقونة الموقع (Favicon) -->
+    <!-- أيقونة الموقع -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
 
     <style>
         :root {
-            --bg-base: #08080e;
-            --bg-surface: rgba(22, 22, 38, 0.7);
+            --bg-base: #06060a;
+            --bg-card: rgba(22, 22, 38, 0.6);
             --primary: #c44dff;
-            --primary-glow: rgba(196, 77, 255, 0.5);
+            --primary-hover: #a63ce6;
             --secondary: #ff6b9d;
             --accent: #6b9dff;
             --text-main: #ffffff;
@@ -29,7 +31,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'Tajawal', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -37,60 +39,60 @@
             background-color: var(--bg-base);
             color: var(--text-main);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow-x: hidden;
             position: relative;
+            scroll-behavior: smooth;
         }
 
-        /* --- الخلفية المتحركة (Mesh Gradient) --- */
+        /* --- تأثيرات الخلفية المتحركة --- */
         .bg-glow {
             position: fixed;
             border-radius: 50%;
             filter: blur(120px);
             z-index: -1;
-            opacity: 0.6;
-            animation: pulseGlow 15s infinite alternate ease-in-out;
+            opacity: 0.4;
+            animation: float 12s infinite alternate ease-in-out;
         }
 
         .glow-1 {
             top: -10%;
-            right: -5%;
-            width: 45vw;
-            height: 45vw;
-            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            right: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 60%);
         }
 
         .glow-2 {
             bottom: -10%;
-            left: -5%;
-            width: 40vw;
-            height: 40vw;
-            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-            animation-delay: -5s;
+            left: -10%;
+            width: 45vw;
+            height: 45vw;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
+            animation-delay: -6s;
         }
 
-        @keyframes pulseGlow {
-            0% { transform: scale(1) translate(0, 0); opacity: 0.4; }
-            100% { transform: scale(1.2) translate(-30px, 30px); opacity: 0.7; }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-40px, 40px) scale(1.1); }
         }
 
-        /* --- الشريط العلوي (Navbar) --- */
+        /* --- الشريط العلوي --- */
         nav {
             width: 100%;
             padding: 20px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--glass-border);
             position: fixed;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            background: rgba(6, 6, 10, 0.5);
         }
 
-        .logo-text {
+        .logo {
             font-size: 26px;
             font-weight: 900;
             background: linear-gradient(90deg, var(--secondary), var(--primary), var(--accent));
@@ -102,8 +104,8 @@
         .nav-links a {
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 500;
             transition: color 0.3s;
         }
 
@@ -111,15 +113,15 @@
             color: var(--primary);
         }
 
-        /* --- القسم الرئيسي (Hero Section) --- */
+        /* --- القسم الرئيسي (Hero) --- */
         .hero {
             display: flex;
             align-items: center;
             justify-content: space-between;
             min-height: 100vh;
             padding: 120px 5% 60px;
-            gap: 40px;
-            max-width: 1400px;
+            gap: 50px;
+            max-width: 1300px;
             margin: 0 auto;
             width: 100%;
         }
@@ -127,7 +129,21 @@
         .hero-content {
             flex: 1;
             max-width: 600px;
-            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeUp 0.8s ease-out forwards;
+        }
+
+        .top-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(196, 77, 255, 0.1);
+            border: 1px solid rgba(196, 77, 255, 0.3);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
         }
 
         .hero-title {
@@ -148,13 +164,15 @@
             color: var(--text-muted);
             line-height: 1.8;
             margin-bottom: 40px;
+            font-weight: 500;
         }
 
         /* --- أزرار التحميل والشارات --- */
-        .action-group {
+        .action-row {
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 20px;
+            flex-wrap: wrap;
         }
 
         .btn-download {
@@ -165,33 +183,19 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             text-decoration: none;
-            padding: 18px 40px;
-            border-radius: 16px;
+            padding: 18px 45px;
+            border-radius: 14px;
             font-size: 20px;
             font-weight: 700;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 30px var(--primary-glow);
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(196, 77, 255, 0.3);
             position: relative;
             overflow: hidden;
-            width: fit-content;
-        }
-
-        .btn-download::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: all 0.6s ease;
         }
 
         .btn-download:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 40px var(--primary-glow);
-        }
-
-        .btn-download:hover::before {
-            left: 100%;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(196, 77, 255, 0.5);
         }
 
         .btn-download svg {
@@ -200,182 +204,276 @@
             fill: currentColor;
         }
 
-        .badges {
+        .stats {
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 40px;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 25px;
         }
 
-        .badge {
-            background: var(--bg-surface);
-            border: 1px solid var(--glass-border);
-            padding: 8px 16px;
-            border-radius: 12px;
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-label {
             font-size: 14px;
             color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            backdrop-filter: blur(10px);
+            font-weight: 500;
         }
 
-        .badge span {
-            color: var(--text-main);
-            font-weight: bold;
-        }
-
-        /* --- شاشة الهاتف (Phone Mockup) --- */
+        /* --- شاشة الهاتف (Mockup) --- */
         .hero-visual {
             flex: 1;
             display: flex;
             justify-content: center;
-            position: relative;
-            animation: float 6s infinite ease-in-out;
+            perspective: 1000px;
         }
 
-        .phone-mockup {
+        .phone {
             width: 300px;
-            height: 600px;
+            height: 620px;
             background: #000;
-            border-radius: 45px;
-            border: 8px solid #222;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.8), inset 0 0 0 2px #444;
+            border-radius: 40px;
+            border: 10px solid #1a1a1a;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 0 2px #333, 0 0 50px rgba(196,77,255,0.1);
             position: relative;
+            overflow: hidden;
+            animation: floatPhone 6s infinite ease-in-out;
+            transform: rotateY(-5deg) rotateX(2deg);
+        }
+
+        @keyframes floatPhone {
+            0% { transform: translateY(0) rotateY(-5deg) rotateX(2deg); }
+            50% { transform: translateY(-15px) rotateY(-5deg) rotateX(2deg); }
+            100% { transform: translateY(0) rotateY(-5deg) rotateX(2deg); }
+        }
+
+        /* الشق العلوي للهاتف */
+        .notch {
+            width: 130px;
+            height: 30px;
+            background: #1a1a1a;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 10;
+        }
+
+        /* واجهة التطبيق داخل الهاتف */
+        .app-screen {
+            width: 100%;
+            height: 100%;
+            background: #0a0a0f;
+            padding: 40px 15px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .app-logo-small {
+            color: var(--primary);
+            font-weight: 900;
+            font-size: 18px;
+        }
+
+        .app-search {
+            width: 30px;
+            height: 30px;
+            background: #1a1a25;
+            border-radius: 50%;
+        }
+
+        .app-banner {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #2b1055, #7597de);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-banner::after {
+            content: 'مترجم';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            color: white;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            flex: 1;
+        }
+
+        .app-card {
+            background: #141421;
+            border-radius: 12px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* شريط الحالة العلوي للهاتف */
-        .phone-notch {
-            width: 120px;
-            height: 25px;
-            background: #222;
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border-bottom-left-radius: 16px;
-            border-bottom-right-radius: 16px;
-            z-index: 10;
+        .app-card-img {
+            height: 110px;
+            background: #2a2a3e;
         }
 
-        /* شاشة الهاتف الداخلية */
-        .phone-screen {
+        .app-card:nth-child(1) .app-card-img { background: linear-gradient(to bottom, #ff7e5f, #feb47b); }
+        .app-card:nth-child(2) .app-card-img { background: linear-gradient(to bottom, #00c6ff, #0072ff); }
+        .app-card:nth-child(3) .app-card-img { background: linear-gradient(to bottom, #8e2de2, #4a00e0); }
+        .app-card:nth-child(4) .app-card-img { background: linear-gradient(to bottom, #f12711, #f5af19); }
+
+        .app-card-title {
+            padding: 8px;
+            font-size: 10px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .app-nav {
             width: 100%;
-            height: 100%;
-            background: linear-gradient(180deg, #141421, #08080e);
+            height: 50px;
+            background: #1a1a25;
+            border-radius: 15px;
             display: flex;
+            justify-content: space-around;
             align-items: center;
-            justify-content: center;
-            position: relative;
+            margin-top: auto;
         }
 
-        .phone-screen::after {
-            content: 'AnimeHub';
-            font-size: 28px;
-            font-weight: 900;
-            color: rgba(255,255,255,0.05);
-            transform: rotate(-90deg);
+        .app-nav-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #333;
         }
+        .app-nav-dot.active { background: var(--primary); }
 
-        .phone-screen .app-logo-big {
-            font-size: 70px;
-            font-weight: 900;
-            color: var(--primary);
-            text-shadow: 0 0 20px var(--primary-glow);
-            position: absolute;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- المميزات (Features) --- */
-        .features-section {
-            padding: 80px 5%;
+        /* --- قسم المميزات --- */
+        .features {
+            padding: 100px 5%;
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
         }
 
-        .section-title {
+        .section-header {
             text-align: center;
-            font-size: 36px;
-            font-weight: 900;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
         }
 
-        .features-grid {
+        .section-title {
+            font-size: 40px;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-muted);
+        }
+
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 30px;
         }
 
-        .feature-card {
-            background: var(--bg-surface);
+        .card {
+            background: var(--bg-card);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
             padding: 40px 30px;
             transition: all 0.4s ease;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
             position: relative;
-            overflow: hidden;
         }
 
-        .feature-card:hover {
+        .card:hover {
             transform: translateY(-10px);
             border-color: rgba(196, 77, 255, 0.4);
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            background: rgba(30, 30, 45, 0.8);
         }
 
-        .feature-icon-wrapper {
+        .icon-box {
             width: 64px;
             height: 64px;
             background: rgba(196, 77, 255, 0.1);
-            border-radius: 20px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
             margin-bottom: 24px;
         }
 
-        .feature-title {
+        .icon-box svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--primary);
+        }
+
+        .card-title {
             font-size: 22px;
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 12px;
         }
 
-        .feature-desc {
-            font-size: 15px;
+        .card-text {
+            font-size: 16px;
             color: var(--text-muted);
             line-height: 1.7;
+            font-weight: 500;
         }
 
-        /* --- التذييل (Footer) --- */
+        /* --- التذييل --- */
         footer {
             text-align: center;
             padding: 40px 20px;
             border-top: 1px solid var(--glass-border);
             color: var(--text-muted);
             font-size: 15px;
-            margin-top: auto;
+            font-weight: 500;
         }
 
-        /* --- التجاوب مع الهواتف (Responsive) --- */
+        /* --- حركات الظهور --- */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- التجاوب مع الشاشات --- */
         @media (max-width: 992px) {
             .hero {
                 flex-direction: column;
                 text-align: center;
                 padding-top: 100px;
+                gap: 60px;
             }
 
             .hero-content {
@@ -384,21 +482,23 @@
                 align-items: center;
             }
 
-            .action-group {
-                align-items: center;
+            .action-row {
+                justify-content: center;
+            }
+
+            .stats {
+                justify-content: center;
             }
 
             .hero-title { font-size: 42px; }
-            .hero-visual { margin-top: 40px; }
-            .phone-mockup { width: 260px; height: 520px; }
+            .hero-visual { display: none; /* إخفاء الهاتف في الجوال لتركيز على النص */ }
         }
 
         @media (max-width: 480px) {
             .hero-title { font-size: 32px; }
-            .hero-subtitle { font-size: 16px; }
-            .btn-download { width: 100%; font-size: 18px; padding: 15px 30px; }
-            .badges { justify-content: center; }
-            .phone-mockup { width: 240px; height: 480px; }
+            .btn-download { width: 100%; font-size: 18px; padding: 16px 20px; }
+            .stats { flex-direction: column; gap: 15px; align-items: center; }
+            .stat-item { align-items: center; }
         }
     </style>
 </head>
@@ -410,7 +510,7 @@
 
     <!-- الشريط العلوي -->
     <nav>
-        <div class="logo-text">AnimeHub</div>
+        <div class="logo">AnimeHub</div>
         <div class="nav-links">
             <a href="#features">المميزات</a>
         </div>
@@ -419,58 +519,110 @@
     <!-- القسم الرئيسي -->
     <header class="hero">
         <div class="hero-content">
-            <h1 class="hero-title">عالم الأنمي في <span>جيبك</span></h1>
+            <div class="top-badge">
+                <span>✨</span> الإصدار الجديد متاح الآن
+            </div>
+            <h1 class="hero-title">استكشف عالم الأنمي <br><span>بلا حدود</span></h1>
             <p class="hero-subtitle">
-                حمل الآن تطبيق AnimeHub واستمتع بمشاهدة أحدث الحلقات والمانجا بترجمة عربية احترافية، مع واجهة سريعة ومزامنة للإحصائيات وبدون إعلانات مزعجة.
+                تجربة مشاهدة وقراءة لا مثيل لها. تصفح آلاف الحلقات والمانجا بجودة عالية، ترجمة دقيقة، وواجهة سريعة خالية من الإعلانات المزعجة.
             </p>
 
-            <div class="action-group">
-                <!-- زر التحميل - استبدل الرابط أدناه برابط الـ APK الخاص بك -->
-                <a href="https://github.com/ahmedaltmim/animehub-site/releases/download/v1.7/animehub.apk" class="btn-download">
+            <div class="action-row">
+                <a href="https://github.com/ahmedaltimim/animehub-site/releases/download/v1.7/animehub.apk" class="btn-download">
                     <svg viewBox="0 0 24 24"><path d="M12 2v13.5l4.5-4.5L18 12l-6 6-6-6 1.5-1.5L12 15.5V2h0zM4 20h16v2H4z"/></svg>
-                    تحميل التطبيق الآن
+                    تحميل التطبيق
                 </a>
+            </div>
 
-                <div class="badges">
-                    <div class="badge">الإصدار: <span>v1.7</span></div>
-                    <div class="badge">الحجم: <span>27 MB</span></div>
-                    <div class="badge">أندرويد: <span>+7.0</span></div>
+            <!-- إحصائيات -->
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-value">v1.7</span>
+                    <span class="stat-label">أحدث إصدار</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">27MB</span>
+                    <span class="stat-label">حجم التطبيق</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">+7.0</span>
+                    <span class="stat-label">يتطلب أندرويد</span>
                 </div>
             </div>
         </div>
 
-        <!-- شاشة الهاتف -->
+        <!-- واجهة الهاتف -->
         <div class="hero-visual">
-            <div class="phone-mockup">
-                <div class="phone-notch"></div>
-                <div class="phone-screen">
-                    <div class="app-logo-big">A</div>
+            <div class="phone">
+                <div class="notch"></div>
+                <div class="app-screen">
+                    <div class="app-header">
+                        <div class="app-logo-small">AnimeHub</div>
+                        <div class="app-search"></div>
+                    </div>
+                    <div class="app-banner"></div>
+                    <div class="app-grid">
+                        <div class="app-card">
+                            <div class="app-card-img"></div>
+                            <div class="app-card-title">Attack on Titan</div>
+                        </div>
+                        <div class="app-card">
+                            <div class="app-card-img"></div>
+                            <div class="app-card-title">Jujutsu Kaisen</div>
+                        </div>
+                        <div class="app-card">
+                            <div class="app-card-img"></div>
+                            <div class="app-card-title">One Piece</div>
+                        </div>
+                        <div class="app-card">
+                            <div class="app-card-img"></div>
+                            <div class="app-card-title">Demon Slayer</div>
+                        </div>
+                    </div>
+                    <div class="app-nav">
+                        <div class="app-nav-dot active"></div>
+                        <div class="app-nav-dot"></div>
+                        <div class="app-nav-dot"></div>
+                        <div class="app-nav-dot"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- قسم المميزات -->
-    <section class="features-section" id="features">
-        <h2 class="section-title">لماذا تختار AnimeHub؟</h2>
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2 class="section-title">لماذا تختار AnimeHub؟</h2>
+            <p class="section-subtitle">صممنا كل تفصيلة لتناسب احتياجاتك</p>
+        </div>
         
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">🎬</div>
-                <h3 class="feature-title">مشاهدة الأنمي</h3>
-                <p class="feature-desc">أحدث الحلقات مع الترجمة والدبلجة بجودة عالية، وسيرفرات مشاهدة سريعة ومستقرة.</p>
+        <div class="grid">
+            <!-- كارت المشاهدة -->
+            <div class="card">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zM8 15l7-4-7-4v8z"/></svg>
+                </div>
+                <h3 class="card-title">مشاهدة الأنمي</h3>
+                <p class="card-text">أحدث الحلقات مع الترجمة والدبلجة بجودة عالية، وسيرفرات مشاهدة سريعة ومستقرة تدعم المشاهدة بدون تقطيع.</p>
             </div>
             
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">📚</div>
-                <h3 class="feature-title">قراءة المانجا</h3>
-                <p class="feature-desc">مكتبة ضخمة من المانجا العربية والفصول المترجمة التي يتم تحديثها بشكل مستمر.</p>
+            <!-- كارت المانجا -->
+            <div class="card">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                </div>
+                <h3 class="card-title">قراءة المانجا</h3>
+                <p class="card-text">مكتبة ضخمة من المانجا العربية والفصول المترجمة التي يتم تحديثها بشكل مستمر لتستمتع بالقراءة أينما كنت.</p>
             </div>
             
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">⚡</div>
-                <h3 class="feature-title">سريع وخفيف</h3>
-                <p class="feature-desc">واجهة سلسة وتنقل بدون تهنيج، مع مزامنة سحابية لحفظ قائمتك وإحصائياتك.</p>
+            <!-- كارت السرعة -->
+            <div class="card">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24"><path d="M13 2.05v9.95h7.05c-.45-5.01-4.24-9-9.05-9.95zM11 2.05C6.19 3 2.4 6.99 1.95 12h7.05V2.05zM11 14H1.95c.45 5.01 4.24 9 9.05 9.95V14zm2 0v9.95c4.81-.95 8.6-4.94 9.05-9.95H13z"/></svg>
+                </div>
+                <h3 class="card-title">سريع وخفيف</h3>
+                <p class="card-text">واجهة سلسة وتنقل بدون تهنيج، مع مزامنة سحابية لحفظ قائمتك وإحصائياتك واستكمال المشاهدة من أي جهاز.</p>
             </div>
         </div>
     </section>
